@@ -51,13 +51,13 @@ def test_api_logfile(capsys):
 
         with open(temp.name) as f:
             content = f.read()
-            cases = {\
-                'ins': {\
-                    "] info2", "] info4"\
-                },\
-                'outs': {\
-                    "] info1", "] info3"\
-                }\
+            cases = {
+                'ins': {
+                    "] info2", "] info4"
+                },
+                'outs': {
+                    "] info1", "] info3"
+                }
             }
             _check_strs_in(cases, content=content)
 
