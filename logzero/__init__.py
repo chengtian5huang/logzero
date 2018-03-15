@@ -39,6 +39,7 @@ import os
 import sys
 import logging
 from logzero.colors import Fore as ForegroundColors
+from logzero.colors import Back as BackgroundColors
 from logging.handlers import RotatingFileHandler, SysLogHandler
 
 try:
@@ -84,7 +85,9 @@ if os.name == 'nt':
     colorama_init()
 
 
-def setup_logger(name=None, logfile=None, level=logging.DEBUG, formatter=None, maxBytes=0, backupCount=0, fileLoglevel=None, disableStderrLogger=False):
+def setup_logger(name=None, logfile=None, level=logging.DEBUG, formatter=None,
+                 maxBytes=0, backupCount=0, fileLoglevel=None,
+                 disableStderrLogger=False):
     """
     Configures and returns a fully configured logger instance, no hassles.
     If a logger with the specified name already exists, it returns the existing instance,
@@ -143,10 +146,14 @@ def setup_logger(name=None, logfile=None, level=logging.DEBUG, formatter=None, m
         _logger.addHandler(stderr_stream_handler)
 
     if logfile:
-        rotating_filehandler = RotatingFileHandler(filename=logfile, maxBytes=maxBytes, backupCount=backupCount)
+        rotating_filehandler = RotatingFileHandler(filename=logfile,
+                                                   maxBytes=maxBytes,
+                                                   backupCount=backupCount,
+                                                   encoding='utf-8')
         setattr(rotating_filehandler, LOGZERO_INTERNAL_LOGGER_ATTR, True)
         rotating_filehandler.setLevel(fileLoglevel or level)
-        rotating_filehandler.setFormatter(formatter or LogFormatter(color=False))
+        rotating_filehandler.setFormatter(
+            formatter or LogFormatter(color=False))
         _logger.addHandler(rotating_filehandler)
 
     return _logger
@@ -162,10 +169,11 @@ class LogFormatter(logging.Formatter):
     DEFAULT_FORMAT = '%(color)s[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d]%(end_color)s %(message)s'
     DEFAULT_DATE_FORMAT = '%y%m%d %H:%M:%S'
     DEFAULT_COLORS = {
-        logging.DEBUG: ForegroundColors.CYAN,
-        logging.INFO: ForegroundColors.GREEN,
-        logging.WARNING: ForegroundColors.YELLOW,
-        logging.ERROR: ForegroundColors.RED
+        logging.DEBUG: ForegroundColors.BLACK + BackgroundColors.LIGHTWHITE_EX,
+        logging.INFO: ForegroundColors.LIGHTGREEN_EX,
+        logging.WARNING: ForegroundColors.LIGHTRED_EX,
+        logging.ERROR: (ForegroundColors.LIGHTYELLOW_EX +
+                        BackgroundColors.RED)
     }
 
     def __init__(self,
@@ -194,7 +202,7 @@ class LogFormatter(logging.Formatter):
 
         if color and _stderr_supports_color():
             self._colors = colors
-            self._normal = ForegroundColors.RESET
+            self._normal = ForegroundColors.RESET+BackgroundColors.RESET
 
     def format(self, record):
         try:
@@ -228,7 +236,7 @@ class LogFormatter(logging.Formatter):
             record.end_color = self._normal
         else:
             record.color = record.end_color = ''
-
+# replacement here!
         formatted = self._fmt % record.__dict__
 
         if record.exc_info:
@@ -291,7 +299,8 @@ def _safe_unicode(s):
         return repr(s)
 
 
-def setup_default_logger(logfile=None, level=logging.DEBUG, formatter=None, maxBytes=0, backupCount=0, disableStderrLogger=False):
+def setup_default_logger(logfile=None, level=logging.DEBUG, formatter=None,
+                         maxBytes=0, backupCount=0, disableStderrLogger=False):
     """
     Deprecated. Use `logzero.loglevel(..)`, `logzero.logfile(..)`, etc.
 
@@ -313,7 +322,9 @@ def setup_default_logger(logfile=None, level=logging.DEBUG, formatter=None, maxB
     :arg bool disableStderrLogger: Should the default stderr logger be disabled. Defaults to False.
     """
     global logger
-    logger = setup_logger(name=LOGZERO_DEFAULT_LOGGER, logfile=logfile, level=level, formatter=formatter, disableStderrLogger=disableStderrLogger)
+    logger = setup_logger(name=LOGZERO_DEFAULT_LOGGER, logfile=logfile,
+                          level=level, formatter=formatter,
+                          disableStderrLogger=disableStderrLogger)
     return logger
 
 
@@ -328,7 +339,8 @@ def reset_default_logger():
     _loglevel = logging.DEBUG
     _logfile = None
     _formatter = None
-    logger = setup_logger(name=LOGZERO_DEFAULT_LOGGER, logfile=_logfile, level=_loglevel, formatter=_formatter)
+    logger = setup_logger(name=LOGZERO_DEFAULT_LOGGER, logfile=_logfile,
+                          level=_loglevel, formatter=_formatter)
 
 
 # Initially setup the default logger
@@ -382,7 +394,8 @@ def formatter(formatter, update_custom_handlers=False):
     _formatter = formatter
 
 
-def logfile(filename, formatter=None, mode='a', maxBytes=0, backupCount=0, encoding=None, loglevel=None, disableStderrLogger=False):
+def logfile(filename, formatter=None, mode='a', maxBytes=0, backupCount=0,
+            encoding=None, loglevel=None, disableStderrLogger=False):
     """
     Setup logging to file (using a `RotatingFileHandler <https://docs.python.org/2/library/logging.handlers.html#rotatingfilehandler>`_ internally).
 
@@ -413,16 +426,21 @@ def logfile(filename, formatter=None, mode='a', maxBytes=0, backupCount=0, encod
 
     # Step 2: If wanted, add the RotatingFileHandler now
     if filename:
-        rotating_filehandler = RotatingFileHandler(filename, mode=mode, maxBytes=maxBytes, backupCount=backupCount, encoding=encoding)
+        rotating_filehandler = RotatingFileHandler(filename, mode=mode,
+                                                   maxBytes=maxBytes,
+                                                   backupCount=backupCount,
+                                                   encoding=encoding)
 
         # Set internal attributes on this handler
         setattr(rotating_filehandler, LOGZERO_INTERNAL_LOGGER_ATTR, True)
         if loglevel:
-            setattr(rotating_filehandler, LOGZERO_INTERNAL_HANDLER_IS_CUSTOM_LOGLEVEL, True)
+            setattr(rotating_filehandler,
+                    LOGZERO_INTERNAL_HANDLER_IS_CUSTOM_LOGLEVEL, True)
 
         # Configure the handler and add it to the logger
         rotating_filehandler.setLevel(loglevel or _loglevel)
-        rotating_filehandler.setFormatter(formatter or _formatter or LogFormatter(color=False))
+        rotating_filehandler.setFormatter(formatter or _formatter or
+                                          LogFormatter(color=False))
         logger.addHandler(rotating_filehandler)
 
 
@@ -464,7 +482,8 @@ def log_function_call(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         args_str = ", ".join([str(arg) for arg in args])
-        kwargs_str = ", ".join(["%s=%s" % (key, kwargs[key]) for key in kwargs])
+        kwargs_str = ", ".join(["%s=%s" % (key, kwargs[key])
+                                for key in kwargs])
         if args_str and kwargs_str:
             all_args_str = ", ".join([args_str, kwargs_str])
         else:
@@ -475,5 +494,15 @@ def log_function_call(func):
 
 
 if __name__ == "__main__":
-    _logger = setup_logger()
-    _logger.info("hello")
+    f = '%(color)s[%(levelname)s][%(funcName)s|%(lineno)s] -> %(message)s%(end_color)s'
+    demo = setup_logger(name='demo', level=logging.DEBUG,  # change level here
+                        formatter=LogFormatter(fmt=f))
+    LD = demo.debug
+    LI = demo.info
+    LW = demo.warning
+    LE = demo.error
+
+    LD('debug')
+    LI('info')
+    LW('warning')
+    LE('error')
