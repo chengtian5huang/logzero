@@ -497,12 +497,7 @@ if __name__ == "__main__":
     f = '%(color)s[%(levelname)s][%(funcName)s|%(lineno)s] -> %(message)s%(end_color)s'
     demo = setup_logger(name='demo', level=logging.DEBUG,  # change level here
                         formatter=LogFormatter(fmt=f))
-    LD = demo.debug
-    LI = demo.info
-    LW = demo.warning
-    LE = demo.error
-
-    LD('debug')
-    LI('info')
-    LW('warning')
-    LE('error')
+    LD = demo.debug('debug')
+    LI = demo.info('info')
+    LW = demo.warning('warning')
+    LE = demo.error('error')
