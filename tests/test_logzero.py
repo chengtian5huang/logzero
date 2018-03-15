@@ -33,7 +33,7 @@ class nt_compat_cls(object):
 def tearDown_nt_compat():
     tempfile.NamedTemporaryFile = None
     tempfile.NamedTemporaryFile = real_NamedTemporaryFile
-    dir_files = os.listdir()
+    dir_files = os.listdir(path='.')
     cant_del, deled = 0, 0
     for file in dir_files:
         if file.endswith('nt_compat'):
@@ -160,13 +160,13 @@ def test_unicode():
 
         with open(temp.name, "rb") as f:
             content = f.read()
-            right_ans_nt_compat = {
-                ("\\xf0\\x9f\\x98\\x84 \\xf0\\x9f\\x98\\x81 \\xf0\\x9"
-                 "f\\x98\\x86 \\xf0\\x9f\\x98\\x85 \\xf0\\x9f\\x98\\x8"
-                 "2\\r\\n'"),
-                ("\\xf0\\x9f\\x98\\x84 \\xf0\\x9f\\x98\\x81 \\xf0\\x9"
-                 "f\\x98\\x86 \\xf0\\x9f\\x98\\x85 \\xf0\\x9f\\x98\\x8"
-                 "2\\n'")  # notice nt use \\r\\n for a new line
+            right_ans_nt_compat = {\
+                ("\\xf0\\x9f\\x98\\x84 \\xf0\\x9f\\x98\\x81 \\xf0\\x9"\
+                 "f\\x98\\x86 \\xf0\\x9f\\x98\\x85 \\xf0\\x9f\\x98\\x8"\
+                 "2\\r\\n'"), \
+                ("\\xf0\\x9f\\x98\\x84 \\xf0\\x9f\\x98\\x81 \\xf0\\x9"\
+                 "f\\x98\\x86 \\xf0\\x9f\\x98\\x85 \\xf0\\x9f\\x98\\x8"\
+                 "2\\n'") \ # notice nt use \\r\\n for a new line
             }
             assert any(right_ans in repr(content)
                        for right_ans in right_ans_nt_compat)
