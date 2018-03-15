@@ -2,6 +2,8 @@
 Source: https://github.com/tartley/colorama/blob/master/colorama/ansi.py
 Copyright: Jonathan Hartley 2013. BSD 3-Clause license.
 """
+from __future__ import print_function
+
 
 CSI = '\033['
 OSC = '\033]'
