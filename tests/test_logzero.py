@@ -33,13 +33,13 @@ class nt_compat_cls(object):
 def tearDown_nt_compat():
     tempfile.NamedTemporaryFile = None
     tempfile.NamedTemporaryFile = real_NamedTemporaryFile
-    dir_files = os.listdir()
+    dir_files = os.listdir('.')
     cant_del, deled = 0, 0
     for file in dir_files:
         if file.endswith('nt_compat'):
             try:
                 os.remove(file)
-            except (PermissionError, FileNotFoundError):
+            except (OSError, WindowsError):
                 cant_del += 1
             else:
                 deled += 1
@@ -242,7 +242,7 @@ def _check_strs_in(strs, content=None):
     assert must_strs & banned_strs == set()
 
     for failed in filter(lambda s: not (s in content), must_strs):
-        for part in failed.split(maxsplit=2):
+        for part in failed.split(' ', 2):
             assert part in content
 
     for failed in filter(lambda s: s in content, banned_strs):
